@@ -80,7 +80,7 @@
 #let SEASON_TEXT = (
   "\\xHemanta": "Hemanta",
   "\\xGimha":   "Gimha",
-  "\\xVassana": "Vassana",
+  "\\xVassana": "Vassāna",
 )
 
 // ---------------------------------------------------------------------------
