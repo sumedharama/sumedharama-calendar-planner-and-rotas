@@ -27,10 +27,22 @@
 #let GRID_STROKE   = 0.5pt
 #let DAY_FONT      = 15pt    // day-number size
 #let WEEKDAY_FONT  = 15pt    // weekday letter size
-#let FOOT_FONT     = 6.5pt   // footnote size
-#let MOON_SIZE     = 15pt
+#let FOOT_FONT     = 6.5pt   // event-label size
+#let NOTE_FONT     = 6pt     // uposatha season-note size
+#let MOON_SIZE     = 17pt
 
-#let GRAY = luma(170)
+// fonts
+#let SERIF = "Alegreya"        // display / month names / event labels
+#let SANS  = "Alegreya Sans"   // numbers / weekday letters / notes
+
+// theme colours (harmonised with legacy-reference/Moon Days.png)
+#let NAVY     = rgb("#1f3a5f")  // deep indigo — header bands, text
+#let GOLD     = rgb("#c2972f")  // accents, month names
+#let GOLDLINE = rgb("#b08a36")  // grid rules (a touch darker for contrast)
+#let CREAM    = rgb("#f5ecd6")  // page background
+#let DAYBG    = rgb("#ffffff")  // active day cell (white, writable)
+#let DISABLED = rgb("#c6cdd8")  // off-month cells (cool slate)
+#let EVENTBG  = rgb("#f1e4bf")  // event-label box fill (warm gold tint)
 
 // ---------------------------------------------------------------------------
 // Localisation
@@ -56,12 +68,19 @@
   "\\xPavarana":             "Pavāraṇā",
 )
 
-// day_text moon macro -> phase kind
+// day_text moon macro -> phase kind (also the asset file name)
 #let MOON_KIND = (
   "\\FullMoon": "full",
   "\\NewMoon": "new",
   "\\FirstQuarter": "first",
   "\\LastQuarter": "last",
+)
+
+// lunar-season macro -> display name
+#let SEASON_TEXT = (
+  "\\xHemanta": "Hemanta",
+  "\\xGimha":   "Gimha",
+  "\\xVassana": "Vassana",
 )
 
 // ---------------------------------------------------------------------------
@@ -78,23 +97,14 @@
 #let first_weekday(y, m) = datetime(year: y, month: m, day: 1).weekday() - 1
 
 // ---------------------------------------------------------------------------
-// Moon glyphs
+// Moon glyphs  (artwork extracted from legacy-reference/Moon Days.png)
+//   new / first (waxing) / full / last (waning)  ->  assets/moons/<kind>.png
+// Clipped to a circle to drop the square corners.
 // ---------------------------------------------------------------------------
 #let moon(kind) = {
   let s = MOON_SIZE
-  if kind == "full" {
-    box(circle(radius: s / 2, stroke: GRID_STROKE + black, fill: white))
-  } else if kind == "new" {
-    box(circle(radius: s / 2, stroke: GRID_STROKE + black, fill: black))
-  } else {
-    let side = if kind == "first" { left } else { right }
-    box(width: s, height: s, {
-      place(center + horizon,
-        box(width: s, height: s, clip: true, radius: 50%, fill: white,
-          place(side + horizon, rect(width: s / 2, height: s, fill: black))))
-      place(center + horizon, circle(radius: s / 2, stroke: GRID_STROKE + black))
-    })
-  }
+  box(width: s, height: s, clip: true, radius: 50%,
+    image("assets/moons/" + kind + ".png", width: s, height: s, fit: "cover"))
 }
 
 // ---------------------------------------------------------------------------
@@ -111,13 +121,22 @@
     let m = int(parts.at(1))
     let d = int(parts.at(2))
     let key = str(m) + "-" + str(d)
-    let entry = events.at(key, default: (kind: none, foot: ()))
+    let entry = events.at(key, default: (kind: none, note: "", foot: ()))
     let day_text = row.at(1)
     if day_text in MOON_KIND { entry.kind = MOON_KIND.at(day_text) }
     let foot = row.at(2)
     if foot != "" {
       let txt = FOOTNOTE_TEXT.at(foot, default: foot)
       entry.foot = entry.foot + (txt,)
+    }
+    // uposatha note for full / new moons, e.g. "15 day Gimha 8/10"
+    let phase = row.at(4, default: "")
+    if phase == "full" or phase == "new" {
+      let sname = SEASON_TEXT.at(row.at(5, default: ""), default: "")
+      let days = row.at(8, default: "")
+      if sname != "" and days != "" and days != "0" {
+        entry.note = days + " day " + sname + " " + row.at(6) + "/" + row.at(7)
+      }
     }
     events.insert(key, entry)
   }
@@ -148,40 +167,51 @@
 // ---------------------------------------------------------------------------
 // Cell builders
 // ---------------------------------------------------------------------------
-#let weekday_cell(letter) = table.cell(fill: GRAY)[
+#let weekday_cell(letter) = table.cell(fill: NAVY)[
   #set align(center + horizon)
-  #text(size: WEEKDAY_FONT)[#letter]
+  #text(font: SANS, size: WEEKDAY_FONT, weight: "medium", fill: CREAM)[#letter]
 ]
 
-#let empty_cell = table.cell(fill: GRAY)[]
+#let empty_cell = table.cell(fill: DISABLED)[]
 
-#let day_cell(d, entry) = table.cell(fill: white)[
+#let day_cell(d, entry) = table.cell(fill: DAYBG)[
   #set align(center + top)
-  #pad(top: 1.5mm)[
+  #pad(top: 1.2mm, x: 0.6mm)[
+    // day number, or the moon graphic in its place
     #if entry != none and entry.kind != none {
       moon(entry.kind)
     } else {
-      text(size: DAY_FONT, weight: "bold")[#d]
+      text(font: SANS, size: DAY_FONT, weight: "bold", fill: NAVY)[#d]
     }
+    // uposatha season note under the full / new moon
+    #if entry != none and entry.note != "" {
+      v(0.3mm)
+      set par(leading: 0.3em, justify: false)
+      text(font: SANS, size: NOTE_FONT, fill: NAVY)[#entry.note]
+    }
+    // event labels in a bordered box
     #if entry != none and entry.foot.len() > 0 {
-      v(0.6mm)
-      set text(size: FOOT_FONT)
+      v(0.8mm)
       set par(leading: 0.3em, justify: false)
       set align(center)
       for f in entry.foot {
-        block(width: 100%, inset: (x: 0.5mm))[\* #f]
+        block(
+          width: 100%, fill: EVENTBG, stroke: 0.6pt + GOLD, radius: 1.2pt,
+          inset: (x: 1mm, y: 0.6mm), below: 0.8mm,
+          text(font: SERIF, style: "italic", size: FOOT_FONT, fill: NAVY)[#f],
+        )
       }
     }
   ]
 ]
 
 // label cell with small abbreviation (top) + large rotated month name
-#let month_label(name) = table.cell(fill: GRAY)[
+#let month_label(name) = table.cell(fill: NAVY)[
   #set align(center + horizon)
   #grid(rows: (auto, 1fr), row-gutter: 2mm,
-    pad(top: 1mm)[#text(size: 8pt, weight: "bold")[#name]],
+    pad(top: 1.5mm)[#text(font: SANS, size: 8.5pt, weight: "medium", fill: CREAM)[#name]],
     align(center + horizon)[#rotate(-90deg, reflow: true)[
-      #text(size: 22pt, weight: "bold")[#name]
+      #text(font: SERIF, size: 24pt, weight: "black", fill: GOLD)[#name]
     ]]
   )
 ]
@@ -213,15 +243,15 @@
   // ---- assemble rows ----
   let header = ()
   if side == "left" {
-    header.push(table.cell(fill: GRAY)[
+    header.push(table.cell(fill: NAVY)[
       #set align(center + horizon)
-      #text(size: 12pt)[#str(year)]
+      #text(font: SERIF, size: 14pt, weight: "bold", fill: GOLD)[#str(year)]
     ])
   }
   for p in cols { header.push(weekday_cell(wd_letter(p))) }
 
   let footer = ()
-  if side == "left" { footer.push(empty_cell) }
+  if side == "left" { footer.push(table.cell(fill: NAVY)[]) }
   for p in cols { footer.push(weekday_cell(wd_letter(p))) }
 
   // month rows
@@ -245,11 +275,12 @@
   set page(
     width: 297mm, height: 210mm,
     margin: PAGE_MARGIN,
+    fill: CREAM,
   )
   table(
     columns: tracks,
     rows: (HEADER_H, 1fr, 1fr, 1fr, HEADER_H),
-    stroke: GRID_STROKE + black,
+    stroke: GRID_STROKE + GOLDLINE,
     inset: 0pt,
     ..header,
     ..body,
@@ -260,7 +291,7 @@
 // ---------------------------------------------------------------------------
 // Document
 // ---------------------------------------------------------------------------
-#set text(font: "DejaVu Sans")
+#set text(font: SERIF)
 
 #let events = load_events(YEAR)
 #let quarters = ((1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12))
