@@ -1,0 +1,30 @@
+legacy-reference/
+wall-planner.pdf
+prompts.org
+
+# Emacs temp files
+auto/
+.auctex-auto/
+*~
+\#*\#
+*.elc
+auto-save-list
+tramp
+.\#*
+.projectile
+TAGS
+
+# Vim temp files
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+*~
+tags
+
+.DS_Store
+.idea
+*.log
+tmp/
+
+
