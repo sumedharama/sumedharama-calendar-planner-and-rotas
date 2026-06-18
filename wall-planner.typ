@@ -39,7 +39,7 @@
 #let NAVY     = rgb("#1f3a5f")  // deep indigo — header bands, text
 #let GOLD     = rgb("#c2972f")  // accents, month names
 #let GOLDLINE = rgb("#b08a36")  // grid rules (a touch darker for contrast)
-#let CREAM    = rgb("#f5ecd6")  // page background
+#let CREAM    = rgb("#f5ecd6")
 #let DAYBG    = rgb("#ffffff")  // active day cell (white, writable)
 #let DISABLED = rgb("#c6cdd8")  // off-month cells (cool slate)
 #let EVENTBG  = rgb("#f1e4bf")  // event-label box fill (warm gold tint)
@@ -78,9 +78,9 @@
 
 // lunar-season macro -> display name
 #let SEASON_TEXT = (
-  "\\xHemanta": "Hemanta",
-  "\\xGimha":   "Gimha",
-  "\\xVassana": "Vassāna",
+  "\\xHemanta": "H",
+  "\\xGimha":   "G",
+  "\\xVassana": "V",
 )
 
 // ---------------------------------------------------------------------------
@@ -135,7 +135,7 @@
       let sname = SEASON_TEXT.at(row.at(5, default: ""), default: "")
       let days = row.at(8, default: "")
       if sname != "" and days != "" and days != "0" {
-        entry.note = days + " day " + sname + " " + row.at(6) + "/" + row.at(7)
+        entry.note = days + "d " + sname + " " + row.at(6) + "/" + row.at(7)
       }
     }
     events.insert(key, entry)
@@ -167,31 +167,41 @@
 // ---------------------------------------------------------------------------
 // Cell builders
 // ---------------------------------------------------------------------------
-#let weekday_cell(letter) = table.cell(fill: NAVY)[
+// The navy cells carry no rule of their own. Continuous navy rectangles are
+// painted behind the table (see render_page), so the cream rasterisation seam
+// between two navy cell fills shows navy instead of cream — invisible, and with
+// no strokes there are no corner nubs poking into the day grid.
+#let weekday_cell(letter, pos) = table.cell(fill: NAVY)[
   #set align(center + horizon)
   #text(font: SANS, size: WEEKDAY_FONT, weight: "medium", fill: CREAM)[#letter]
 ]
 
-#let empty_cell = table.cell(fill: DISABLED)[]
+// gold rule drawn only around day / off-month cells, so the rules appear
+// between the days but never within the continuous navy regions
+#let DAY_STROKE = GRID_STROKE + GOLDLINE
 
-#let day_cell(d, entry) = table.cell(fill: DAYBG)[
+#let empty_cell = table.cell(fill: DISABLED, stroke: DAY_STROKE)[]
+
+#let day_cell(d, entry) = table.cell(fill: DAYBG, stroke: DAY_STROKE)[
   #set align(center + top)
-  #pad(top: 1.2mm, x: 0.6mm)[
+  #pad(top: 1.0mm, x: 0.6mm)[
     // day number, or the moon graphic in its place
     #if entry != none and entry.kind != none {
       moon(entry.kind)
     } else {
-      text(font: SANS, size: DAY_FONT, weight: "bold", fill: NAVY)[#d]
+      // box of the moon's height so the number sits centred on the moon line
+      box(height: MOON_SIZE, align(horizon,
+        text(font: SANS, size: DAY_FONT, weight: "bold", fill: NAVY)[#d]))
     }
     // uposatha season note under the full / new moon
     #if entry != none and entry.note != "" {
-      v(0.3mm)
+      // v(0.1mm)
       set par(leading: 0.3em, justify: false)
       text(font: SANS, size: NOTE_FONT, fill: NAVY)[#entry.note]
     }
     // event labels in a bordered box
     #if entry != none and entry.foot.len() > 0 {
-      v(0.8mm)
+      // v(0.4mm)
       set par(leading: 0.3em, justify: false)
       set align(center)
       for f in entry.foot {
@@ -248,11 +258,11 @@
       #text(font: SERIF, size: 14pt, weight: "bold", fill: GOLD)[#str(year)]
     ])
   }
-  for p in cols { header.push(weekday_cell(wd_letter(p))) }
+  for p in cols { header.push(weekday_cell(wd_letter(p), "head")) }
 
   let footer = ()
   if side == "left" { footer.push(table.cell(fill: NAVY)[]) }
-  for p in cols { footer.push(weekday_cell(wd_letter(p))) }
+  for p in cols { footer.push(weekday_cell(wd_letter(p), "foot")) }
 
   // month rows
   let body = ()
@@ -275,12 +285,24 @@
   set page(
     width: 297mm, height: 210mm,
     margin: PAGE_MARGIN,
-    fill: CREAM,
   )
+
+  // Continuous navy bands painted behind the table: the top / bottom weekday
+  // strips and (left page) the month-label column. The seams between the navy
+  // cells then reveal navy, not the page cream — so the blue reads continuous
+  // without any rules that could protrude into the day grid.
+  let total_w = tracks.sum()
+  let total_h = 210mm - 2 * PAGE_MARGIN
+  place(top + left, rect(width: total_w, height: HEADER_H, fill: NAVY))
+  place(bottom + left, rect(width: total_w, height: HEADER_H, fill: NAVY))
+  if side == "left" {
+    place(top + left, rect(width: LABEL_W, height: total_h, fill: NAVY))
+  }
+
   table(
     columns: tracks,
     rows: (HEADER_H, 1fr, 1fr, 1fr, HEADER_H),
-    stroke: GRID_STROKE + GOLDLINE,
+    stroke: none,                 // only the day cells carry the gold rule
     inset: 0pt,
     ..header,
     ..body,
