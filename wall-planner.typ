@@ -107,7 +107,13 @@
 
 #let day_cell(d, entry) = table.cell(fill: DAYBG, stroke: DAY_STROKE)[
   #set align(center + top)
-  #pad(top: 1.0mm, x: 0.6mm)[
+  // uposatha full / new moon cells get a top + bottom background decoration;
+  // placed out of flow so the day number / note / event box keep their position
+  #if entry != none and entry.kind in ("full", "new") {
+    place(top + center, dy: 0.3mm, image("assets/cell-top-decor-1.png", width: 98%))
+    place(bottom + center, dy: -0.3mm, image("assets/cell-bottom-decor-1.png", width: 98%))
+  }
+  #pad(top: 2.0mm, x: 0.6mm)[
     // tight spacing between the number/moon, the season note and the event box
     #set par(spacing: 2.0mm)
     // day number, or the moon graphic in its place
