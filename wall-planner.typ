@@ -105,7 +105,10 @@
 
 #let empty_cell = table.cell(fill: DISABLED, stroke: DAY_STROKE)[]
 
-#let day_cell(d, entry) = table.cell(fill: DAYBG, stroke: DAY_STROKE)[
+#let day_cell(d, entry) = table.cell(
+  fill: if entry != none and entry.kind in ("full", "new") { CREAM } else { DAYBG },
+  stroke: DAY_STROKE,
+)[
   #set align(center + top)
   // uposatha full / new moon cells get a top + bottom background decoration;
   // placed out of flow so the day number / note / event box keep their position
