@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-file [Typst](https://typst.app) document (`wall-planner.typ`) that generates a printable Buddhist wall-planner calendar for the Sumedhārāma monastery. It reproduces a legacy Excel/Google-Sheets layout: a three-month horizontal day grid (months stacked vertically) with moon phases, uposatha observance notes, and event labels. Month names are Portuguese; weekday headings are single-/two-letter English.
+A pair of [Typst](https://typst.app) documents for the Sumedhārāma monastery, sharing helpers from `lib.typ` (theme colours, fonts, localisation tables, the `moon()` glyph and CSV loading — keep cross-document changes there):
+
+- **`wall-planner.typ`** — a printable Buddhist wall-planner calendar (see below).
+- **`moon-days.typ`** — a four-page "Moon Days" overview sheet (see *The moon-days sheet*).
+
+`wall-planner.typ` reproduces a legacy Excel/Google-Sheets layout: a three-month horizontal day grid (months stacked vertically) with moon phases, uposatha observance notes, and event labels. Month names are Portuguese; weekday headings are single-/two-letter English.
 
 For a given year it emits **8 A4-landscape pages** — one quarter per pair of pages, each quarter split into a left and a right half meant to be printed and butted together side by side (page 1/2 = Jan-Feb-Mar left/right, 3/4 = Apr-May-Jun, etc.).
 
@@ -35,7 +40,7 @@ Fonts **Alegreya** and **Alegreya Sans** must be installed (Alegreya lives in `~
 - **`footnote`** holds a LaTeX macro (e.g. `\xAsalhaPuja`) resolved to Portuguese display text via the `FOOTNOTE_TEXT` dict; rendered as a bordered event box. Multiple rows for the same date accumulate into the `foot` list.
 - For **full/new** moons, the uposatha season note (e.g. `15d G 10/10`) is composed from `days`, `season` (via `SEASON_TEXT`), `season_number`/`season_total`. A `days` of `0`/empty suppresses it.
 
-The CSV values were originally LaTeX macros; their canonical expansions live in `data/text-portuguese.tex`. The dicts at the top of `wall-planner.typ` (`FOOTNOTE_TEXT`, `MOON_KIND`, `SEASON_TEXT`, `MONTHS_PT`, `WEEKDAY_LETTERS`) are the in-Typst port of that — keep them in sync if the CSVs change.
+The CSV values were originally LaTeX macros; their canonical expansions live in `data/text-portuguese.tex`. The dicts in `lib.typ` (`FOOTNOTE_TEXT`, `MOON_KIND`, `SEASON_TEXT`, `PHASE_INFO`, `MONTHS_PT`, `WEEKDAY_LETTERS`) are the in-Typst port of that — keep them in sync if the CSVs change.
 
 ## Layout architecture
 
@@ -52,6 +57,23 @@ The blue header/footer strips and the left month-label column must read as one c
 Do **not** try to hide the seams with cell strokes — earlier attempts (per-side navy strokes, a navy global rule) caused navy nubs to protrude into the day grid at corners. The behind-the-table rectangles are the working solution because they involve no strokes at all.
 
 Tunables (page margins, label width, header height, font sizes, moon size, theme colours) are the constants block near the top of `wall-planner.typ`.
+
+## The moon-days sheet (`moon-days.typ`)
+
+A standalone overview poster styled after `legacy-reference/Moon Days.png`. Emits **4 A5-portrait pages, one per quarter** of the year (page 1 = Jan-Mar, … page 4 = Oct-Dec). Build/inspect exactly like the wall planner:
+
+```sh
+typst compile moon-days.typ moon-days.pdf            # current year (sys.inputs.year, default today)
+typst compile --input year=2027 moon-days.typ moon-days.pdf
+typst compile --format png --ppi 150 moon-days.typ '/tmp/md-{p}.png'
+```
+
+Each page (layout mirrors `legacy-reference/Moon Days layout blocks.png`):
+- the `assets/wheel-and-lotuses.png` crest, then a bilingual title (`Moon Days <year>` / `Dias da Lua <year>`) with the quarter's English month range underneath;
+- a left **legend** column — the four phase moons (new / waxing / full / waning) with bilingual names, plus the reflection note;
+- a right **moon-days table** — that quarter's phase days as `moon | date | – | "English / Portuguese"` rows. Data comes from `load_moon_days(year)` (lib.typ), which yields the four-phase days via `PHASE_INFO`.
+
+`assets/moon-days-background.png` (opaque, ISO-A ratio) is the full-bleed gold page frame, set as the page `background`. **Fitting note:** A5 is narrower than the A4 reference, so weekday/month names are abbreviated to three letters and the table/legend widths and font sizes are tuned so the fullest quarter (13 rows) stays on one page — re-check page count (`pdfinfo`) after any size/spacing change, as small additions easily push a quarter onto a second page.
 
 ## Notes
 
