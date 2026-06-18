@@ -6,3 +6,6 @@ moon-days:
 
 morning-evening-puja:
 	typst compile --input year=2026 morning-evening-puja.typ morning-evening-puja.pdf
+
+pindapata:
+	typst compile --input year=2026 pindapata.typ pindapata.pdf
