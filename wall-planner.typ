@@ -185,6 +185,8 @@
 #let day_cell(d, entry) = table.cell(fill: DAYBG, stroke: DAY_STROKE)[
   #set align(center + top)
   #pad(top: 1.0mm, x: 0.6mm)[
+    // tight spacing between the number/moon, the season note and the event box
+    #set par(spacing: 2.0mm)
     // day number, or the moon graphic in its place
     #if entry != none and entry.kind != none {
       moon(entry.kind)
@@ -195,14 +197,12 @@
     }
     // uposatha season note under the full / new moon
     #if entry != none and entry.note != "" {
-      // v(0.1mm)
-      set par(leading: 0.3em, justify: false)
+      set par(leading: 0.3em, spacing: 2.0mm, justify: false)
       text(font: SANS, size: NOTE_FONT, fill: NAVY)[#entry.note]
     }
     // event labels in a bordered box
     #if entry != none and entry.foot.len() > 0 {
-      // v(0.4mm)
-      set par(leading: 0.3em, justify: false)
+      set par(leading: 0.3em, spacing: 2.0mm, justify: false)
       set align(center)
       for f in entry.foot {
         block(
