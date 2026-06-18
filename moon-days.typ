@@ -90,7 +90,7 @@
   table(
     columns: (auto, 25mm, auto, 1fr),
     align: (center + horizon, left + horizon, center + horizon, left + horizon),
-    inset: (x: 1.3mm, y: 2.4mm),
+    inset: (x: 1.3mm, y: 2.1mm),
     stroke: (_, y) => (top: 0.4pt + GOLDLINE),  // hairline rule above every row
     ..rows,
   )
@@ -108,6 +108,11 @@
     legend,
     moon_list(q),
   )
+  place(bottom, dx: 31mm, block(width: 83mm, {
+    set par(justify: false, leading: 0.5em)
+    set text(font: SERIF, size: 6.5pt, fill: NAVY)
+    [As datas para o calendário lunar são determinadas por métodos de cálculo tradicional e nem sempre são no mesmo dia das ocorrências astronómicas. Para mais informações consulte: #link("https://splendidmoons.github.io")]
+  }))
 }
 
 // ---------------------------------------------------------------------------
