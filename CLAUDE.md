@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A pair of [Typst](https://typst.app) documents for the Sumedhārāma monastery, sharing helpers from `lib.typ` (theme colours, fonts, localisation tables, the `moon()` glyph and CSV loading — keep cross-document changes there):
+A set of [Typst](https://typst.app) documents for the Sumedhārāma monastery, sharing helpers from `lib.typ` (theme colours, fonts, localisation tables, the `moon()` glyph and CSV loading — keep cross-document changes there):
 
 - **`wall-planner.typ`** — a printable Buddhist wall-planner calendar (see below).
 - **`moon-days.typ`** — a four-page "Moon Days" overview sheet (see *The moon-days sheet*).
+- **`morning-evening-puja.typ`** — a four-page puja rota sheet (see *The morning/evening puja sheet*).
 
 `wall-planner.typ` reproduces a legacy Excel/Google-Sheets layout: a three-month horizontal day grid (months stacked vertically) with moon phases, uposatha observance notes, and event labels. Month names are Portuguese; weekday headings are single-/two-letter English.
 
@@ -74,6 +75,20 @@ Each page (layout mirrors `legacy-reference/Moon Days layout blocks.png`):
 - a right **moon-days table** — that quarter's phase days as `moon | date | – | "English / Portuguese"` rows. Data comes from `load_moon_days(year)` (lib.typ), which yields the four-phase days via `PHASE_INFO`.
 
 `assets/moon-days-background.png` (opaque, ISO-A ratio) is the full-bleed gold page frame, set as the page `background`. **Fitting note:** A5 is narrower than the A4 reference, so weekday/month names are abbreviated to three letters and the table/legend widths and font sizes are tuned so the fullest quarter (13 rows) stays on one page — re-check page count (`pdfinfo`) after any size/spacing change, as small additions easily push a quarter onto a second page.
+
+## The morning/evening puja sheet (`morning-evening-puja.typ`)
+
+A noticeboard rota styled after `legacy-reference/2026-06-17_19-46 morning-evening pujas.png`. Emits **4 A4-portrait pages, one per quarter** (page 1 = Jan-Mar, … page 4 = Oct-Dec), each showing its three months side by side as self-contained strips (each repeats its own `Morning / Evening Puja` title + Portuguese month band) meant to be **cut out and pinned** individually. The three strips touch with **no column gutter**, so the shared edge is a single cut line between adjacent months. Build/inspect like the others:
+
+```sh
+typst compile morning-evening-puja.typ                       # current year (sys.inputs.year)
+typst compile --input year=2027 morning-evening-puja.typ morning-evening-puja.pdf
+typst compile --format png --ppi 140 morning-evening-puja.typ '/tmp/me-{p}.png'
+```
+
+Each month strip is one Typst `table` with columns `weekday · day · Manhã · Tarde` (the two blank `1fr` columns are the writable morning/evening roster areas, labelled by a sub-header row). Rows run day 1..end-of-month; **on moon days the phase icon replaces the day number** (`load_moons()` builds a `"month-day" -> kind` lookup from `day_text`/`MOON_KIND`, same source as the wall planner — so all four phases appear). Moon days get a cream cell fill and weekends a faint gold tint.
+
+**Markup gotcha:** the day cell uses an inline `#if … {…} else {…}`. In Typst markup mode the `else` must stay on the **same line** as the preceding `}` — an `else` on a new line is parsed as literal text and the source tokens render into the cells. Keep them together.
 
 ## Notes
 

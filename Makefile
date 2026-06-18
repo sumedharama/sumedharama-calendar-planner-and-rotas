@@ -3,3 +3,6 @@ wall-planner:
 
 moon-days:
 	typst compile --input year=2026 moon-days.typ moon-days.pdf
+
+morning-evening-puja:
+	typst compile --input year=2026 morning-evening-puja.typ morning-evening-puja.pdf
