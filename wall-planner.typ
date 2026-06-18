@@ -18,6 +18,9 @@
 // Override from the CLI with:  typst compile --input year=2027 wall-planner.typ
 #let YEAR = int(sys.inputs.at("year", default: "2026"))
 
+// Shared colours, fonts, localisation tables, the moon glyph and CSV loading.
+#import "lib.typ": *
+
 // ---------------------------------------------------------------------------
 // Tunables (millimetres)
 // ---------------------------------------------------------------------------
@@ -26,116 +29,36 @@
 #let HEADER_H      = 8mm     // top / bottom weekday strip height
 #let GRID_STROKE   = 0.5pt
 #let DAY_FONT      = 15pt    // day-number size
-#let WEEKDAY_FONT  = 15pt    // weekday letter size
+#let WEEKDAY_FONT  = 11pt    // weekday letter size
 #let FOOT_FONT     = 6.5pt   // event-label size
 #let NOTE_FONT     = 6pt     // uposatha season-note size
 #let MOON_SIZE     = 17pt
 
-// fonts
-#let SERIF = "Alegreya"        // display / month names / event labels
-#let SANS  = "Alegreya Sans"   // numbers / weekday letters / notes
-
-// theme colours (harmonised with legacy-reference/Moon Days.png)
-#let NAVY     = rgb("#1f3a5f")  // deep indigo — header bands, text
-#let GOLD     = rgb("#c2972f")  // accents, month names
-#let GOLDLINE = rgb("#b08a36")  // grid rules (a touch darker for contrast)
-#let CREAM    = rgb("#f5ecd6")
-#let DAYBG    = rgb("#ffffff")  // active day cell (white, writable)
-#let DISABLED = rgb("#c6cdd8")  // off-month cells (cool slate)
-#let EVENTBG  = rgb("#f1e4bf")  // event-label box fill (warm gold tint)
-
 // ---------------------------------------------------------------------------
-// Localisation
-// ---------------------------------------------------------------------------
-#let MONTHS_PT = (
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-)
-
-// weekday letters, index 0 = Monday .. 6 = Sunday (English abbreviations)
-#let WEEKDAY_LETTERS = ("M", "Tu", "W", "Th", "F", "Sa", "Su")
-
-// footnote macro -> Portuguese text (see data/text-portuguese.tex)
-#let FOOTNOTE_TEXT = (
-  "\\xAjahnChahMemorialDay": "Dia em memória de Ajahn Chah",
-  "\\xAjahnChahBirthDay":    "Aniversário de Ajahn Chah",
-  "\\xThaiNewYear":          "Ano Novo Tailandês, Songkran",
-  "\\xFirstDayOfVassa":      "Primeiro dia do Vassa",
-  "\\xLastDayOfVassa":       "Último dia do Vassa",
-  "\\xMaghaPuja":            "Māgha Pūjā",
-  "\\xVesakhaPuja":          "Vesākha Pūjā",
-  "\\xAsalhaPuja":           "Āsāḷhā Pūjā",
-  "\\xPavarana":             "Pavāraṇā",
-)
-
-// day_text moon macro -> phase kind (also the asset file name)
-#let MOON_KIND = (
-  "\\FullMoon": "full",
-  "\\NewMoon": "new",
-  "\\FirstQuarter": "first",
-  "\\LastQuarter": "last",
-)
-
-// lunar-season macro -> display name
-#let SEASON_TEXT = (
-  "\\xHemanta": "H",
-  "\\xGimha":   "G",
-  "\\xVassana": "V",
-)
-
-// ---------------------------------------------------------------------------
-// Calendar helpers
-// ---------------------------------------------------------------------------
-#let is_leap(y) = (calc.rem(y, 4) == 0 and calc.rem(y, 100) != 0) or calc.rem(y, 400) == 0
-
-#let days_in_month(y, m) = {
-  let lengths = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-  if m == 2 and is_leap(y) { 29 } else { lengths.at(m - 1) }
-}
-
-// weekday of the 1st, 0 = Monday .. 6 = Sunday
-#let first_weekday(y, m) = datetime(year: y, month: m, day: 1).weekday() - 1
-
-// ---------------------------------------------------------------------------
-// Moon glyphs  (artwork extracted from legacy-reference/Moon Days.png)
-//   new / first (waxing) / full / last (waning)  ->  assets/moons/<kind>.png
-// Clipped to a circle to drop the square corners.
-// ---------------------------------------------------------------------------
-#let moon(kind) = {
-  let s = MOON_SIZE
-  box(width: s, height: s, clip: true, radius: 50%,
-    image("assets/moons/" + kind + ".png", width: s, height: s, fit: "cover"))
-}
-
-// ---------------------------------------------------------------------------
-// Event data: build a lookup keyed "month-day" -> (kind, footnotes)
+// Event data: build a lookup keyed "month-day" -> (kind, note, footnotes)
 // ---------------------------------------------------------------------------
 #let load_events(year) = {
-  let rows = csv("data/events-" + str(year) + ".csv", delimiter: ";")
   let events = (:)
-  for row in rows.slice(1) {       // skip header
-    if row.len() < 3 { continue }
-    let date = row.at(0)
+  for row in event_rows(year) {
+    let date = row.at("date", default: "")
     if date == "" { continue }
     let parts = date.split("-")
-    let m = int(parts.at(1))
-    let d = int(parts.at(2))
-    let key = str(m) + "-" + str(d)
+    let key = str(int(parts.at(1))) + "-" + str(int(parts.at(2)))
     let entry = events.at(key, default: (kind: none, note: "", foot: ()))
-    let day_text = row.at(1)
+    let day_text = row.at("day_text", default: "")
     if day_text in MOON_KIND { entry.kind = MOON_KIND.at(day_text) }
-    let foot = row.at(2)
+    let foot = row.at("footnote", default: "")
     if foot != "" {
       let txt = FOOTNOTE_TEXT.at(foot, default: foot)
       entry.foot = entry.foot + (txt,)
     }
-    // uposatha note for full / new moons, e.g. "15 day Gimha 8/10"
-    let phase = row.at(4, default: "")
+    // uposatha note for full / new moons, e.g. "15d G 8/10"
+    let phase = row.at("phase", default: "")
     if phase == "full" or phase == "new" {
-      let sname = SEASON_TEXT.at(row.at(5, default: ""), default: "")
-      let days = row.at(8, default: "")
+      let sname = SEASON_TEXT.at(row.at("season", default: ""), default: "")
+      let days = row.at("days", default: "")
       if sname != "" and days != "" and days != "0" {
-        entry.note = days + "d " + sname + " " + row.at(6) + "/" + row.at(7)
+        entry.note = days + "d " + sname + " " + row.at("season_number") + "/" + row.at("season_total")
       }
     }
     events.insert(key, entry)
@@ -189,11 +112,11 @@
     #set par(spacing: 2.0mm)
     // day number, or the moon graphic in its place
     #if entry != none and entry.kind != none {
-      moon(entry.kind)
+      moon(entry.kind, size: MOON_SIZE)
     } else {
       // box of the moon's height so the number sits centred on the moon line
       box(height: MOON_SIZE, align(horizon,
-        text(font: SANS, size: DAY_FONT, weight: "bold", fill: NAVY)[#d]))
+        text(font: DAYNUM_FONT, size: DAY_FONT, fill: NAVY)[#d]))
     }
     // uposatha season note under the full / new moon
     #if entry != none and entry.note != "" {
@@ -221,7 +144,7 @@
   #grid(rows: (auto, 1fr), row-gutter: 2mm,
     pad(top: 1.5mm)[#text(font: SANS, size: 8.5pt, weight: "medium", fill: CREAM)[#name]],
     align(center + horizon)[#rotate(-90deg, reflow: true)[
-      #text(font: SERIF, size: 24pt, weight: "black", fill: GOLD)[#name]
+      #text(font: MONTH_FONT, size: 24pt, fill: GOLD)[#name]
     ]]
   )
 ]
@@ -285,6 +208,7 @@
   set page(
     width: 297mm, height: 210mm,
     margin: PAGE_MARGIN,
+    fill: NAVY,
   )
 
   // Continuous navy bands painted behind the table: the top / bottom weekday
