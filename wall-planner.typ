@@ -28,10 +28,10 @@
 #let LABEL_W       = 22mm    // width of the rotated month-name column (left page)
 #let HEADER_H      = 8mm     // top / bottom weekday strip height
 #let GRID_STROKE   = 0.5pt
-#let DAY_FONT      = 15pt    // day-number size
+#let DAY_FONT      = 13pt    // day-number size
 #let WEEKDAY_FONT  = 11pt    // weekday letter size
 #let FOOT_FONT     = 6.5pt   // event-label size
-#let NOTE_FONT     = 6pt     // uposatha season-note size
+#let NOTE_FONT     = 8pt     // uposatha season-note size
 #let MOON_SIZE     = 17pt
 
 // ---------------------------------------------------------------------------
@@ -125,12 +125,12 @@
     } else {
       // box of the moon's height so the number sits centred on the moon line
       box(height: MOON_SIZE, align(horizon,
-        text(font: DAYNUM_FONT, size: DAY_FONT, fill: NAVY)[#d]))
+        text(font: DAYNUM_FONT, style: "italic", weight: "bold", size: DAY_FONT, fill: NAVY)[#d]))
     }
     // uposatha season note under the full / new moon
     #if entry != none and entry.note != "" {
       set par(leading: 0.3em, spacing: 2.0mm, justify: false)
-      text(font: SANS, size: NOTE_FONT, fill: NAVY)[#entry.note]
+      text(font: SANS, size: NOTE_FONT, weight: "medium", fill: NAVY)[#entry.note]
     }
     // event labels in a bordered box
     #if entry != none and entry.foot.len() > 0 {

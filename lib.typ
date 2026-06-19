@@ -10,8 +10,8 @@
 // ---------------------------------------------------------------------------
 #let SERIF = "Alegreya"        // display / month names / event labels
 #let SANS  = "Alegreya Sans"   // numbers / weekday letters / notes
-#let DAYNUM_FONT = "Hurricane" // decorative script for the day numbers
-#let MONTH_FONT  = "Hurricane" // decorative script for the large month names
+#let DAYNUM_FONT = "Dancing Script" // decorative script for the day numbers
+#let MONTH_FONT  = "Dancing Script" // decorative script for the large month names
 
 // ---------------------------------------------------------------------------
 // Theme colours (harmonised with legacy-reference/Moon Days.png)
