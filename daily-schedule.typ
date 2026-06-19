@@ -38,10 +38,10 @@
   ("breakfast",         [Breakfast],         [7:15 – 7:45],   [Pequeno-almoço]),
   ("breakfast-wash-up", [Breakfast Wash Up], [7:45 – 8:00],   [Limpeza do Pequeno-almoço]),
   ("work-period",       [Work Period],       [8:00 – 10:45],  [Período de Trabalho]),
-  ("gather",            [Gather in the Hall],[10:45],         [Reunir no Salão]),
+  ("gather",            [Gather in the Meditation Hall], [10:45], [Reunir na Sala de Meditação]),
   ("meal",              [Meal],              [11:00],         [Refeição]),
-  ("meal-wash-up",      [Meal Wash Up],      [Start by 12:00 \ or before],
-                                             [Limpeza da Refeição \ Começar até às 12:00 ou antes]),
+  ("meal-wash-up",      [Meal Wash Up],      [Start by 12:00],
+                                             [Limpeza da Refeição \ Começar até às 12:00]),
   ("evening-puja",      [Evening Pūja],      [19:30],         [Pūja da Noite]),
 )
 
@@ -77,10 +77,11 @@
 // Closing blessing.
 #let blessing = align(center)[
   #separator(50mm)
+  #v(-1.5mm)
   #set par(leading: 0.5em)
   #text(font: SERIF, size: 9pt, fill: NAVY)[May all beings be happy and at peace.]
   #linebreak()
-  #text(font: SERIF, size: 9pt, style: "italic", fill: NAVY)[Que todos os seres sejam felizes e em paz.]
+  #text(font: SERIF, size: 9pt, style: "italic", fill: NAVY)[Que todos os seres possam estar em paz e ser felizes.]
 ]
 
 // ---------------------------------------------------------------------------
@@ -88,7 +89,7 @@
 // ---------------------------------------------------------------------------
 #set page(
   width: 148mm, height: 210mm,
-  margin: (x: 13mm, top: 13mm, bottom: 12mm),
+  margin: (x: 13mm, top: 10mm, bottom: 12mm),
   fill: white,
   background: image("assets/moon-days-background.png", width: 100%, height: 100%),
 )

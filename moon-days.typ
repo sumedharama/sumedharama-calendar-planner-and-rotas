@@ -60,13 +60,13 @@
   legend_card("full"); sep
   legend_card("waning")
   v(2.5mm)
-  diamond_rule(22mm)
-  v(1.8mm)
+  diamond_rule(26mm)
+  v(1.0mm)
   set par(justify: false, leading: 0.5em)
   set text(font: SERIF, size: 8pt, fill: NAVY)
-  align(center)[Moon Days are special days for reflection, practice and merit.]
-  v(2mm)
-  align(center, text(style: "italic")[Os Dias da Lua são dias especiais para reflexão, prática e mérito.])
+  align(center)[Moon Days are special days for reflection and practice.]
+  v(1mm)
+  align(center, text(style: "italic")[Os Dias da Lua são dias especiais para reflexão e prática.])
 }
 
 // The dated list of phase days for one quarter (months q*3+1 .. q*3+3).
@@ -103,12 +103,12 @@
   title_block(q)
   v(3mm)
   grid(
-    columns: (27mm, 1fr),
+    columns: (35mm, 1fr),
     column-gutter: 4mm,
     legend,
     moon_list(q),
   )
-  place(bottom, dx: 31mm, block(width: 83mm, {
+  place(bottom, dx: 8.5mm, block(width: 105mm, {
     set par(justify: false, leading: 0.5em)
     set text(font: SERIF, size: 6.5pt, fill: NAVY)
     [As datas para o calendário lunar são determinadas por métodos de cálculo tradicional e nem sempre são no mesmo dia das ocorrências astronómicas. Para mais informações consulte: #link("https://splendidmoons.github.io")]
@@ -120,7 +120,7 @@
 // ---------------------------------------------------------------------------
 #set page(
   width: 148mm, height: 210mm,
-  margin: (x: 17mm, top: 13mm, bottom: 12mm),
+  margin: (x: 15mm, top: 13mm, bottom: 12mm),
   fill: white,
   background: image("assets/moon-days-background.png", width: 100%, height: 100%),
 )
