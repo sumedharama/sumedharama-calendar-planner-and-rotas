@@ -111,7 +111,7 @@
   place(bottom, dx: 8.5mm, block(width: 105mm, {
     set par(justify: false, leading: 0.5em)
     set text(font: SERIF, size: 6.5pt, fill: NAVY)
-    [As datas para o calendário lunar são determinadas por métodos de cálculo tradicional e nem sempre são no mesmo dia das ocorrências astronómicas. Para mais informações consulte: #link("https://splendidmoons.github.io")]
+    [As datas para o calendário lunar são determinadas por métodos de cálculo tradicional e nem sempre são no mesmo dia das ocorrências astronómicas. Para mais informações consulte: #underline(link("https://splendidmoons.github.io"))]
   }))
 }
 
