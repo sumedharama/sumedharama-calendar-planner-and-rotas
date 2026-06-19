@@ -99,7 +99,7 @@
   }
 
   table(
-    columns: (WD_W, DAY_W, 1fr, 1fr),
+    columns: (WD_W, DAY_W, 25mm, 25mm),
     rows: (auto, auto, auto) + (ROW_H,) * days_in_month(year, month),
     stroke: RULE,
     ..cells,

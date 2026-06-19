@@ -23,7 +23,7 @@
 #let PAGE_MARGIN  = 7mm     // margin on every edge
 #let WD_W         = 8mm     // weekday-abbreviation column width
 #let DAY_W        = 8mm     // day-number / moon column width
-#let WRITE_W      = 24mm    // writable roster column (~half a full strip width)
+#let WRITE_W      = 25mm    // writable roster column (~half a full strip width)
 #let ROW_H        = 8mm     // day-row height (writing room for the roster)
 #let TITLE_FONT   = 9pt     // "Piṇḍapāta" strip
 #let MONTH_FONT   = 13pt    // month name + year band
