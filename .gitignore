@@ -1,5 +1,6 @@
 legacy-reference/
 *.pdf
+dist/
 prompts.org
 
 # Emacs temp files
