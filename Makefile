@@ -9,3 +9,6 @@ morning-evening-puja:
 
 pindapata:
 	typst compile --input year=2026 pindapata.typ pindapata.pdf
+
+daily-schedule:
+	typst compile --input daily-schedule.typ daily-schedule.pdf
