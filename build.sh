@@ -64,10 +64,34 @@ for name in "${names[@]}"; do
     done
 done
 
-# Verify that exactly 5 PDF files ended up in dist/
+# Notebook planners (folded A6 calendars): four variants per year, in dist/notebook-planner/.
+notebook_pdfs=()
+for ((year = FROM_YEAR; year <= TO_YEAR; year++)); do
+    ./notebook-planner-build.sh "$year"
+    ./notebook-planner-build.sh "$year" one-week
+    ./notebook-planner-build.sh "$year" bw
+    ./notebook-planner-build.sh "$year" one-week bw
+    for variant in two-weeks one-week two-weeks-bw one-week-bw; do
+        notebook_pdfs+=("$DIST/notebook-planner/notebook-planner-$year-$variant.pdf")
+    done
+done
+
+# One combined PDF: the daily schedule, every document for the whole range,
+# then the notebook planners.
+COMBINED="$DIST/sumedharama-calendars-$FROM_YEAR-$TO_YEAR.pdf"
+echo "Creating $COMBINED ..."
+combined_inputs=("$DIST/daily-schedule.pdf")
+for name in "${names[@]}"; do
+    combined_inputs+=("$DIST/$name-$FROM_YEAR-$TO_YEAR.pdf")
+done
+combined_inputs+=("${notebook_pdfs[@]}")
+pdftk "${combined_inputs[@]}" cat output "$COMBINED"
+
+# Verify the PDF files directly in dist/: the 5 documents plus the combined one.
 count=$(find "$DIST" -maxdepth 1 -type f -name '*.pdf' | wc -l)
-if [[ "$count" -ne 5 ]]; then
-    echo "Error: expected 5 PDF files in $DIST/, found $count." >&2
+if [[ "$count" -ne 6 ]]; then
+    echo "Error: expected 6 PDF files in $DIST/, found $count." >&2
     exit 1
 fi
-echo "Done: $count PDFs in $DIST/."
+nb_count=$(find "$DIST/notebook-planner" -maxdepth 1 -type f -name '*.pdf' | wc -l)
+echo "Done: $count PDFs in $DIST/ and $nb_count notebook planner PDFs in $DIST/notebook-planner/."

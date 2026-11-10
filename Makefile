@@ -15,3 +15,58 @@ pindapata:
 
 daily-schedule:
 	typst watch daily-schedule.typ daily-schedule.pdf
+
+# ---------------------------------------------------------------------------
+# Notebook planner: folded A6 year calendar (notebook-planner.typ).
+# Output goes to dist/notebook-planner/. See docs/notebook-planner/README.md.
+#
+#   make notebook-planner YEAR=2026              two-weeks layout
+#   make notebook-planner-one-week YEAR=2026     one week per A6 panel
+#   make notebook-planner-bw YEAR=2026           high-contrast B/W (also notebook-planner-one-week-bw)
+#   make notebook-planner-all                    4 PDFs per year with data (YEAR=2026 for one)
+#   make notebook-planner-watch YEAR=2026        rebuild on every change
+#   make notebook-planner-proof                  fold-proof PDF
+#   make notebook-planner-verify YEAR=2026       acceptance checks (needs poppler-utils)
+#   make notebook-planner-clean                  remove dist/notebook-planner/
+# ---------------------------------------------------------------------------
+
+# Years with data, ascending. `notebook-planner-all` builds every one unless YEAR is given.
+NP_YEARS := $(sort $(patsubst data/events-%.csv,%,$(wildcard data/events-*.csv)))
+NP_ALL_YEARS := $(if $(filter undefined,$(origin YEAR)),$(NP_YEARS),$(YEAR))
+
+YEAR ?= 2026
+
+.PHONY: notebook-planner notebook-planner-one-week notebook-planner-bw notebook-planner-one-week-bw \
+        notebook-planner-all notebook-planner-watch notebook-planner-proof notebook-planner-verify \
+        notebook-planner-clean
+
+notebook-planner-all:
+	@for y in $(NP_ALL_YEARS); do \
+	  ./notebook-planner-build.sh $$y && ./notebook-planner-build.sh $$y one-week && ./notebook-planner-build.sh $$y bw && ./notebook-planner-build.sh $$y one-week bw || exit 1; \
+	done
+
+notebook-planner:
+	./notebook-planner-build.sh $(YEAR)
+
+notebook-planner-one-week:
+	./notebook-planner-build.sh $(YEAR) one-week
+
+notebook-planner-bw:
+	./notebook-planner-build.sh $(YEAR) bw
+
+notebook-planner-one-week-bw:
+	./notebook-planner-build.sh $(YEAR) one-week bw
+
+notebook-planner-watch:
+	@mkdir -p dist/notebook-planner
+	typst watch --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/notebook-planner-$(YEAR)-two-weeks.pdf
+
+notebook-planner-proof:
+	@mkdir -p dist/notebook-planner
+	typst compile --input proof=1 --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/notebook-planner-proof.pdf
+
+notebook-planner-verify:
+	./notebook-planner-verify.sh $(YEAR)
+
+notebook-planner-clean:
+	rm -rf dist/notebook-planner

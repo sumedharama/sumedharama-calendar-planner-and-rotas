@@ -9,6 +9,9 @@ A set of [Typst](https://typst.app) documents for the Sumedhārāma monastery, s
 - **`wall-planner.typ`** — a printable Buddhist wall-planner calendar (see below).
 - **`moon-days.typ`** — a four-page "Moon Days" overview sheet (see *The moon-days sheet*).
 - **`morning-evening-puja.typ`** — a four-page puja rota sheet (see *The morning/evening puja sheet*).
+- **`pindapata.typ`** — a four-page A4 piṇḍapāta rota, same cut-out-strip format as the puja sheet but with a single writable column (see the file header).
+- **`daily-schedule.typ`** — a single A5 noticeboard page with the daily timetable (no year; read the file header).
+- **`notebook-planner.typ`** — a folded A6 pocket year calendar (see *The notebook planner*).
 
 `wall-planner.typ` reproduces a legacy Excel/Google-Sheets layout: a three-month horizontal day grid (months stacked vertically) with moon phases, uposatha observance notes, and event labels. Month names are Portuguese; weekday headings are single-/two-letter English.
 
@@ -16,8 +19,31 @@ For a given year it emits **8 A4-landscape pages** — one quarter per pair of p
 
 ## Build
 
+### Make targets
+
 ```sh
-make                                              # compiles year 2026 -> wall-planner.pdf
+make                          # full release build: ./build.sh (needs typst, pdftk, poppler-utils)
+make wall-planner             # typst watch, 2026 -> wall-planner.pdf (repo root, gitignored)
+make moon-days                # typst watch, 2026 -> moon-days.pdf
+make morning-evening-puja     # typst watch, 2026 -> morning-evening-puja.pdf
+make pindapata                # typst watch, 2026 -> pindapata.pdf
+make daily-schedule           # typst watch -> daily-schedule.pdf
+make notebook-planner YEAR=2026   # + -one-week, -bw, -one-week-bw, -all, -watch, -proof, -verify, -clean
+```
+
+The five watch targets are for live editing one document (change the `--input year=` in the Makefile for another year). The `notebook-planner*` targets are described in *The notebook planner*.
+
+**Bare `make` / `./build.sh [<from> <to>]`** (years default to the range of `data/events-<year>.csv`) wipes `dist/`, then builds:
+- `dist/daily-schedule.pdf`;
+- `dist/{wall-planner,moon-days,morning-evening-puja,pindapata}-<from>-<to>.pdf` — every year concatenated with pdftk;
+- `dist/notebook-planner/notebook-planner-<year>-{two-weeks,one-week,two-weeks-bw,one-week-bw}.pdf`;
+- `dist/sumedharama-calendars-<from>-<to>.pdf` — everything joined: daily schedule, the four range PDFs, then the notebook PDFs (311 pages for 2026–2030).
+
+It aborts unless exactly 6 PDFs sit directly in `dist/`. Add a document to the build by extending `names` in `build.sh`, and update that count.
+
+### Single document
+
+```sh
 typst compile --input year=2027 wall-planner.typ wall-planner.pdf
 ```
 
@@ -90,6 +116,29 @@ Each month strip is one Typst `table` with columns `weekday · day · Manhã · 
 
 **Markup gotcha:** the day cell uses an inline `#if … {…} else {…}`. In Typst markup mode the `else` must stay on the **same line** as the preceding `}` — an `else` on a new line is parsed as literal text and the source tokens render into the cells. Keep them together.
 
+## The notebook planner (`notebook-planner.typ`)
+
+A folded A6 pocket year calendar (English-only), merged in from the former `notebook-calendar` project. Four A6 panels per A4 side, printed duplex and folded twice into an eight-page leaflet. Each day is one row: `Nov 9 Mon`, then the moon icon (which follows the date rather than replacing it) and, on full/new moons, the uposatha note (`15d H 8/8`). User-facing build/print/fold instructions: `docs/notebook-planner/README.md` (the original PRD/task list are alongside, historical).
+
+```sh
+make notebook-planner YEAR=2026            # dist/notebook-planner/notebook-planner-2026-two-weeks.pdf
+make notebook-planner-one-week YEAR=2026   # one week per A6 panel
+make notebook-planner-bw YEAR=2026         # high-contrast B/W (also notebook-planner-one-week-bw)
+make notebook-planner-all                  # 4 PDFs for every year with data (YEAR=2026 for one)
+make notebook-planner-verify YEAR=2026     # acceptance checks (needs poppler-utils)
+make notebook-planner-proof                # numbered fold-proof PDF
+```
+
+Scripts: `notebook-planner-build.sh`, `notebook-planner-verify.sh`; `notebook-planner-probe.typ` dumps the parsed model as text for the verify script (keep its `key=value` header). Bare `make` (`build.sh`) wipes `dist/`, builds all documents, then all four notebook variants per year into `dist/notebook-planner/`, and finally joins everything (daily schedule, the per-document range PDFs, then the notebook PDFs) into `dist/sumedharama-calendars-<from>-<to>.pdf` with pdftk; it checks for exactly 6 PDFs directly in `dist/`. Typst inputs: `year`, `layout` (`two-weeks`|`one-week`), `theme` (`colour`|`bw`), `proof=1`, `only=<panel>`. Build is Typst plus shell only (no Python/pdfjam/pdftk for this target).
+
+Shared with the other documents via `lib.typ` and `data/`: colours, fonts, `MOON_KIND`, `SEASON_TEXT`, `moon()`, `event_rows()`. Notebook-only additions in `lib.typ`: `FOOTNOTE_TEXT_EN` (English event labels — keep in sync with `FOOTNOTE_TEXT`), `MONTHS_ABBR_EN`/`WEEKDAYS_ABBR_EN`, `moon_bw()` (vector B/W moon), `load_year()` and the week/page model (`weeks_for`, `pages_for`).
+
+Key points:
+- `load_year(year)` → `"<month>-<day>"` (unpadded) → `(moon, events, note)`. Several CSV rows may share a date: events accumulate, moon is never overwritten. `day_entry()` gates on `date.year() == year` so spill-over days in the first/last week don't inherit the year's moons/events. Weeks are Monday-start, from the week of 1 Jan to the week of 31 Dec; two weeks per A6 page (2026: 53 weeks, 27 pages).
+- Panels are `box(width: PANEL_W, height: PANEL_H, clip: true)` with absolutely placed fixed-height day rows; rotate the *finished* panel by 180° rather than laying out rotated text. 5 mm inset on every panel.
+- Imposition (`slot_layout(base)`, `base = 4s`, same on every A4 side): top-left page 4s+3 rotated, top-right 4s+2 rotated, bottom-left 4s+4 upright, bottom-right 4s+1 upright. Pages past the last leave a blank slot. If a panel is out of order after a hand fold, fix only `slot_layout`; record the `make notebook-planner-proof` result (not yet recorded as run).
+- Theme values are the `INK`/`ACCENT`/`RULE*`/`WEEKEND_TINT` lets at the top of `notebook-planner.typ` — use them, not `NAVY`/`GOLD`, in panel code.
+- Pitfalls: `} else {` on one line in markup; four panels exactly fill 210×297 mm (extend inner edges 0.2 mm if a hairline seam appears); `pdftotext -layout` scrambles 180° panels, use `-raw`.
 ## Notes
 
 - `legacy-reference/` (source screenshots, the original `.xlsx`, the Google-Sheets PDF) and `*.pdf` output are gitignored.
