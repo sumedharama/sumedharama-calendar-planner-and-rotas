@@ -21,14 +21,14 @@ Requirements:
 make notebook-planner YEAR=2026          # or: ./notebook-planner-build.sh 2026
 ```
 
-Output: `dist/notebook-planner/notebook-planner-2026-two-weeks.pdf`. Years 2026–2030 have data.
+Output: `dist/notebook-planner/A6/notebook-planner-A6-2026-two-weeks.pdf`. Years 2026–2030 have data.
 
 Other targets:
 
 ```sh
 make notebook-planner-watch YEAR=2026             # rebuild on every change
 make notebook-planner-verify YEAR=2026            # acceptance checks, one pass/fail line each
-make notebook-planner-proof                # fold-proof PDF: dist/notebook-planner/notebook-planner-proof.pdf
+make notebook-planner-proof                # fold-proof PDF: dist/notebook-planner/A6/notebook-planner-A6-proof.pdf
 make notebook-planner-clean               # remove dist/notebook-planner/
 ```
 

@@ -29,7 +29,7 @@ This empties `dist/` and builds:
 
 - `dist/daily-schedule.pdf`
 - `dist/wall-planner-2026-2030.pdf`, `moon-days-…`, `morning-evening-puja-…` and `pindapata-…`: every year in one PDF
-- `dist/notebook-planner/notebook-planner-<year>-<variant>.pdf`: for each year, `two-weeks`, `one-week` and their high-contrast black-and-white `-bw` versions
+- `dist/notebook-planner/A6/notebook-planner-A6-<year>-<variant>.pdf`: for each year, `two-weeks`, `one-week` and their high-contrast black-and-white `-bw` versions
 - `dist/sumedharama-calendars-2026-2030.zip`: all of the PDFs above in one archive (the notebook ones in a `notebook-planner/` folder)
 
 The years are taken from the `data/events-<year>.csv` files. To build a range

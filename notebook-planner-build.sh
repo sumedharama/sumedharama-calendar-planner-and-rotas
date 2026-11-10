@@ -2,10 +2,10 @@
 #
 # Build the folded A6 notebook planner for one year.
 #
-#   ./notebook-planner-build.sh 2026            -> dist/notebook-planner/notebook-planner-2026-two-weeks.pdf
-#   make notebook-planner YEAR=2027    -> dist/notebook-planner/notebook-planner-2027-two-weeks.pdf
-#   ./notebook-planner-build.sh 2026 one-week   -> dist/notebook-planner/notebook-planner-2026-one-week.pdf (one week per A6 panel)
-#   ./notebook-planner-build.sh 2026 one-week bw -> dist/notebook-planner/notebook-planner-2026-one-week-bw.pdf (high contrast, laser)
+#   ./notebook-planner-build.sh 2026            -> dist/notebook-planner/A6/notebook-planner-A6-2026-two-weeks.pdf
+#   make notebook-planner YEAR=2027    -> dist/notebook-planner/A6/notebook-planner-A6-2027-two-weeks.pdf
+#   ./notebook-planner-build.sh 2026 one-week   -> dist/notebook-planner/A6/notebook-planner-A6-2026-one-week.pdf (one week per A6 panel)
+#   ./notebook-planner-build.sh 2026 one-week bw -> dist/notebook-planner/A6/notebook-planner-A6-2026-one-week-bw.pdf (high contrast, laser)
 #
 # The year must have a matching data file, data/events-<year>.csv. See
 # docs/notebook-planner/README.md for adding a new year. Printing and folding instructions are also
@@ -61,8 +61,8 @@ if [ ! -f "data/events-$YEAR.csv" ]; then
   fail "No data file data/events-$YEAR.csv — add it or choose a year in $(available_years | head -n 1)–$(available_years | tail -n 1)."
 fi
 
-mkdir -p dist/notebook-planner
-OUT="dist/notebook-planner/notebook-planner-$YEAR"
+mkdir -p dist/notebook-planner/A6
+OUT="dist/notebook-planner/A6/notebook-planner-A6-$YEAR"
 OUT="$OUT-$LAYOUT"
 [ "$THEME" = bw ] && OUT="$OUT-bw"
 OUT="$OUT.pdf"

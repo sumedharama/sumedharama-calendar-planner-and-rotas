@@ -36,7 +36,7 @@ The five watch targets are for live editing one document (change the `--input ye
 **Bare `make` / `./build.sh [<from> <to>]`** (years default to the range of `data/events-<year>.csv`) wipes `dist/`, then builds:
 - `dist/daily-schedule.pdf`;
 - `dist/{wall-planner,moon-days,morning-evening-puja,pindapata}-<from>-<to>.pdf` — every year concatenated with pdftk;
-- `dist/notebook-planner/notebook-planner-<year>-{two-weeks,one-week,two-weeks-bw,one-week-bw}.pdf`;
+- `dist/notebook-planner/A6/notebook-planner-A6-<year>-{two-weeks,one-week,two-weeks-bw,one-week-bw}.pdf`;
 - `dist/sumedharama-calendars-<from>-<to>.zip` — all of the PDFs above (the five in `dist/` plus the notebook ones, kept in a `notebook-planner/` folder inside the zip). Different page sizes and layouts, so they are deliberately not merged into one PDF.
 
 It aborts unless exactly 5 PDFs sit directly in `dist/`, there are 4 notebook PDFs per year, and the zip holds all of them. Add a document to the build by extending `names` in `build.sh`, and update that count.
@@ -121,7 +121,7 @@ Each month strip is one Typst `table` with columns `weekday · day · Manhã · 
 A folded A6 pocket year calendar (English-only), merged in from the former `notebook-calendar` project. Four A6 panels per A4 side, printed duplex and folded twice into an eight-page leaflet. Each day is one row: `Nov 9 Mon`, then the moon icon (which follows the date rather than replacing it) and, on full/new moons, the uposatha note (`15d H 8/8`). User-facing build/print/fold instructions: `docs/notebook-planner/README.md` (the original PRD/task list are alongside, historical).
 
 ```sh
-make notebook-planner YEAR=2026            # dist/notebook-planner/notebook-planner-2026-two-weeks.pdf
+make notebook-planner YEAR=2026            # dist/notebook-planner/A6/notebook-planner-A6-2026-two-weeks.pdf
 make notebook-planner-one-week YEAR=2026   # one week per A6 panel
 make notebook-planner-bw YEAR=2026         # high-contrast B/W (also notebook-planner-one-week-bw)
 make notebook-planner-all                  # 4 PDFs for every year with data (YEAR=2026 for one)
@@ -129,7 +129,7 @@ make notebook-planner-verify YEAR=2026     # acceptance checks (needs poppler-ut
 make notebook-planner-proof                # numbered fold-proof PDF
 ```
 
-Scripts: `notebook-planner-build.sh`, `notebook-planner-verify.sh`; `notebook-planner-probe.typ` dumps the parsed model as text for the verify script (keep its `key=value` header). Bare `make` (`build.sh`) wipes `dist/`, builds all documents, then all four notebook variants per year into `dist/notebook-planner/`, and finally zips every PDF into `dist/sumedharama-calendars-<from>-<to>.zip` (see *Build*). `make notebook-planner-all` builds only the notebook PDFs, with no zip. Typst inputs: `year`, `layout` (`two-weeks`|`one-week`), `theme` (`colour`|`bw`), `proof=1`, `only=<panel>`. The notebook scripts are Typst plus shell only (no Python/pdfjam/pdftk).
+Scripts: `notebook-planner-build.sh`, `notebook-planner-verify.sh`; `notebook-planner-probe.typ` dumps the parsed model as text for the verify script (keep its `key=value` header). Bare `make` (`build.sh`) wipes `dist/`, builds all documents, then all four notebook variants per year into `dist/notebook-planner/A6/`, and finally zips every PDF into `dist/sumedharama-calendars-<from>-<to>.zip` (see *Build*). `make notebook-planner-all` builds only the notebook PDFs, with no zip. Typst inputs: `year`, `layout` (`two-weeks`|`one-week`), `theme` (`colour`|`bw`), `proof=1`, `only=<panel>`. The notebook scripts are Typst plus shell only (no Python/pdfjam/pdftk).
 
 Shared with the other documents via `lib.typ` and `data/`: colours, fonts, `MOON_KIND`, `SEASON_TEXT`, `moon()`, `event_rows()`. Notebook-only additions in `lib.typ`: `FOOTNOTE_TEXT_EN` (English event labels — keep in sync with `FOOTNOTE_TEXT`), `MONTHS_ABBR_EN`/`WEEKDAYS_ABBR_EN`, `moon_bw()` (vector B/W moon), `load_year()` and the week/page model (`weeks_for`, `pages_for`).
 

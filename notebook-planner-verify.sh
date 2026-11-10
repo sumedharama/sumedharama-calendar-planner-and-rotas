@@ -4,7 +4,7 @@
 #
 #   ./notebook-planner-verify.sh 2026            or            make notebook-planner-verify YEAR=2026
 #
-# Builds dist/notebook-planner/notebook-planner-<year>-two-weeks.pdf, then checks the page count, the week and
+# Builds dist/notebook-planner/A6/notebook-planner-A6-<year>-two-weeks.pdf, then checks the page count, the week and
 # day-cell model, the date labels in the PDF, duplicate days, moon glyphs and
 # that no build input points outside this repository. Exit status is 0 only
 # when every check passes.
@@ -21,7 +21,7 @@ YEAR=$1
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-PDF="dist/notebook-planner/notebook-planner-$YEAR-two-weeks.pdf"
+PDF="dist/notebook-planner/A6/notebook-planner-A6-$YEAR-two-weeks.pdf"
 pass=0
 fail=0
 ok()  { pass=$((pass + 1)); printf 'PASS  %s\n' "$*"; }

@@ -72,7 +72,7 @@ for ((year = FROM_YEAR; year <= TO_YEAR; year++)); do
     ./notebook-planner-build.sh "$year" bw
     ./notebook-planner-build.sh "$year" one-week bw
     for variant in two-weeks one-week two-weeks-bw one-week-bw; do
-        notebook_pdfs+=("$DIST/notebook-planner/notebook-planner-$year-$variant.pdf")
+        notebook_pdfs+=("$DIST/notebook-planner/A6/notebook-planner-A6-$year-$variant.pdf")
     done
 done
 
@@ -83,10 +83,10 @@ if [[ "$count" -ne 5 ]]; then
     echo "Error: expected 5 PDF files in $DIST/, found $count." >&2
     exit 1
 fi
-nb_count=$(find "$DIST/notebook-planner" -maxdepth 1 -type f -name '*.pdf' | wc -l)
+nb_count=$(find "$DIST/notebook-planner/A6" -maxdepth 1 -type f -name '*.pdf' | wc -l)
 nb_expected=$(( (TO_YEAR - FROM_YEAR + 1) * 4 ))
 if [[ "$nb_count" -ne "$nb_expected" ]]; then
-    echo "Error: expected $nb_expected PDF files in $DIST/notebook-planner/, found $nb_count." >&2
+    echo "Error: expected $nb_expected PDF files in $DIST/notebook-planner/A6/, found $nb_count." >&2
     exit 1
 fi
 

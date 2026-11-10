@@ -58,12 +58,12 @@ notebook-planner-one-week-bw:
 	./notebook-planner-build.sh $(YEAR) one-week bw
 
 notebook-planner-watch:
-	@mkdir -p dist/notebook-planner
-	typst watch --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/notebook-planner-$(YEAR)-two-weeks.pdf
+	@mkdir -p dist/notebook-planner/A6
+	typst watch --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/A6/notebook-planner-A6-$(YEAR)-two-weeks.pdf
 
 notebook-planner-proof:
-	@mkdir -p dist/notebook-planner
-	typst compile --input proof=1 --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/notebook-planner-proof.pdf
+	@mkdir -p dist/notebook-planner/A6
+	typst compile --input proof=1 --input year=$(YEAR) notebook-planner.typ dist/notebook-planner/A6/notebook-planner-A6-proof.pdf
 
 notebook-planner-verify:
 	./notebook-planner-verify.sh $(YEAR)
