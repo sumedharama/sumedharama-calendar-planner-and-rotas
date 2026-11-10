@@ -45,8 +45,11 @@
 //   columns    two day columns of 47.5 mm
 //   rows       seven day rows of 19.786 mm (138.5 / 7)
 // ---------------------------------------------------------------------------
-#let PANEL_W = if A7 { 74.25mm } else { 105mm }
-#let PANEL_H = if A7 { 105mm } else { 148.5mm }
+// A7: the 4 × 2 grid sits inside a 2 mm margin round the A4 sheet so the date
+// labels stay within the printable area; the panels shrink to fit.
+#let SHEET_MARGIN = if A7 { 2mm } else { 0mm }
+#let PANEL_W = if A7 { (297mm - 2 * SHEET_MARGIN) / 4 } else { 105mm }
+#let PANEL_H = if A7 { (210mm - 2 * SHEET_MARGIN) / 2 } else { 148.5mm }
 #let INSET = if A7 { 3mm } else { 5mm }
 #let CONTENT_W = PANEL_W - 2 * INSET
 #let CONTENT_H = PANEL_H - 2 * INSET
@@ -286,8 +289,8 @@
       let content = panel(pages.at(slot.page - 1), slot.page)
       place(
         top + left,
-        dx: slot.col * PANEL_W,
-        dy: slot.row * PANEL_H,
+        dx: SHEET_MARGIN + slot.col * PANEL_W,
+        dy: SHEET_MARGIN + slot.row * PANEL_H,
         if slot.rotated { rotate(180deg, content) } else { content },
       )
     }
@@ -296,8 +299,8 @@
   if A7 {
     place(
       top + left,
-      dx: PANEL_W,
-      dy: PANEL_H,
+      dx: SHEET_MARGIN + PANEL_W,
+      dy: SHEET_MARGIN + PANEL_H,
       line(length: 2 * PANEL_W, stroke: 0.3pt + black),
     )
   }
