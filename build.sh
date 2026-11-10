@@ -76,22 +76,29 @@ for ((year = FROM_YEAR; year <= TO_YEAR; year++)); do
     done
 done
 
-# One combined PDF: the daily schedule, every document for the whole range,
-# then the notebook planners.
-COMBINED="$DIST/sumedharama-calendars-$FROM_YEAR-$TO_YEAR.pdf"
-echo "Creating $COMBINED ..."
-combined_inputs=("$DIST/daily-schedule.pdf")
-for name in "${names[@]}"; do
-    combined_inputs+=("$DIST/$name-$FROM_YEAR-$TO_YEAR.pdf")
-done
-combined_inputs+=("${notebook_pdfs[@]}")
-pdftk "${combined_inputs[@]}" cat output "$COMBINED"
-
-# Verify the PDF files directly in dist/: the 5 documents plus the combined one.
+# Verify that exactly 5 PDF files are directly in dist/, plus the 4 notebook
+# variants for every year in dist/notebook-planner/.
 count=$(find "$DIST" -maxdepth 1 -type f -name '*.pdf' | wc -l)
-if [[ "$count" -ne 6 ]]; then
-    echo "Error: expected 6 PDF files in $DIST/, found $count." >&2
+if [[ "$count" -ne 5 ]]; then
+    echo "Error: expected 5 PDF files in $DIST/, found $count." >&2
     exit 1
 fi
 nb_count=$(find "$DIST/notebook-planner" -maxdepth 1 -type f -name '*.pdf' | wc -l)
-echo "Done: $count PDFs in $DIST/ and $nb_count notebook planner PDFs in $DIST/notebook-planner/."
+nb_expected=$(( (TO_YEAR - FROM_YEAR + 1) * 4 ))
+if [[ "$nb_count" -ne "$nb_expected" ]]; then
+    echo "Error: expected $nb_expected PDF files in $DIST/notebook-planner/, found $nb_count." >&2
+    exit 1
+fi
+
+# One zip with all the PDFs: the five above and the notebook planners (kept in
+# their notebook-planner/ folder). Written under a temporary name and moved into
+# place, so a failed run never leaves a half-written archive.
+ZIP="sumedharama-calendars-$FROM_YEAR-$TO_YEAR.zip"
+echo "Creating $DIST/$ZIP ..."
+(cd "$DIST" && rm -f "$ZIP.tmp.zip" && zip -q -r "$ZIP.tmp.zip" ./*.pdf notebook-planner -i '*.pdf' && mv -f "$ZIP.tmp.zip" "$ZIP")
+zip_count=$(unzip -Z1 "$DIST/$ZIP" | wc -l)
+if [[ "$zip_count" -ne $((count + nb_count)) ]]; then
+    echo "Error: $ZIP holds $zip_count files, expected $((count + nb_count))." >&2
+    exit 1
+fi
+echo "Done: $count PDFs in $DIST/, $nb_count notebook planner PDFs in $DIST/notebook-planner/, all in $DIST/$ZIP ($zip_count PDFs)."

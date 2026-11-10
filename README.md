@@ -17,7 +17,7 @@ event days come from one CSV per year in `data/` (2026–2030).
 
 - [Typst](https://typst.app)
 - Fonts **Alegreya**, **Alegreya Sans** and **Dancing Script** (check with `typst fonts`)
-- `pdftk` (joins the years together) and `poppler-utils` (`pdfinfo`, `pdftotext`, `pdfimages`; used by the build and the checks)
+- `pdftk` (joins the years together), `zip` and `poppler-utils` (`pdfinfo`, `pdftotext`, `pdfimages`; used by the build and the checks)
 
 ## Build everything
 
@@ -30,7 +30,7 @@ This empties `dist/` and builds:
 - `dist/daily-schedule.pdf`
 - `dist/wall-planner-2026-2030.pdf`, `moon-days-…`, `morning-evening-puja-…` and `pindapata-…`: every year in one PDF
 - `dist/notebook-planner/notebook-planner-<year>-<variant>.pdf`: for each year, `two-weeks`, `one-week` and their high-contrast black-and-white `-bw` versions
-- `dist/sumedharama-calendars-2026-2030.pdf`: all of the above in one file
+- `dist/sumedharama-calendars-2026-2030.zip`: all of the PDFs above in one archive (the notebook ones in a `notebook-planner/` folder)
 
 The years are taken from the `data/events-<year>.csv` files. To build a range
 by hand, run `./build.sh 2026 2028`.

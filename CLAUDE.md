@@ -22,7 +22,7 @@ For a given year it emits **8 A4-landscape pages** — one quarter per pair of p
 ### Make targets
 
 ```sh
-make                          # full release build: ./build.sh (needs typst, pdftk, poppler-utils)
+make                          # full release build: ./build.sh (needs typst, pdftk, zip, poppler-utils)
 make wall-planner             # typst watch, 2026 -> wall-planner.pdf (repo root, gitignored)
 make moon-days                # typst watch, 2026 -> moon-days.pdf
 make morning-evening-puja     # typst watch, 2026 -> morning-evening-puja.pdf
@@ -37,9 +37,9 @@ The five watch targets are for live editing one document (change the `--input ye
 - `dist/daily-schedule.pdf`;
 - `dist/{wall-planner,moon-days,morning-evening-puja,pindapata}-<from>-<to>.pdf` — every year concatenated with pdftk;
 - `dist/notebook-planner/notebook-planner-<year>-{two-weeks,one-week,two-weeks-bw,one-week-bw}.pdf`;
-- `dist/sumedharama-calendars-<from>-<to>.pdf` — everything joined: daily schedule, the four range PDFs, then the notebook PDFs (311 pages for 2026–2030).
+- `dist/sumedharama-calendars-<from>-<to>.zip` — all of the PDFs above (the five in `dist/` plus the notebook ones, kept in a `notebook-planner/` folder inside the zip). Different page sizes and layouts, so they are deliberately not merged into one PDF.
 
-It aborts unless exactly 6 PDFs sit directly in `dist/`. Add a document to the build by extending `names` in `build.sh`, and update that count.
+It aborts unless exactly 5 PDFs sit directly in `dist/`, there are 4 notebook PDFs per year, and the zip holds all of them. Add a document to the build by extending `names` in `build.sh`, and update that count.
 
 ### Single document
 
@@ -129,7 +129,7 @@ make notebook-planner-verify YEAR=2026     # acceptance checks (needs poppler-ut
 make notebook-planner-proof                # numbered fold-proof PDF
 ```
 
-Scripts: `notebook-planner-build.sh`, `notebook-planner-verify.sh`; `notebook-planner-probe.typ` dumps the parsed model as text for the verify script (keep its `key=value` header). Bare `make` (`build.sh`) wipes `dist/`, builds all documents, then all four notebook variants per year into `dist/notebook-planner/`, and finally joins everything (daily schedule, the per-document range PDFs, then the notebook PDFs) into `dist/sumedharama-calendars-<from>-<to>.pdf` with pdftk; it checks for exactly 6 PDFs directly in `dist/`. Typst inputs: `year`, `layout` (`two-weeks`|`one-week`), `theme` (`colour`|`bw`), `proof=1`, `only=<panel>`. Build is Typst plus shell only (no Python/pdfjam/pdftk for this target).
+Scripts: `notebook-planner-build.sh`, `notebook-planner-verify.sh`; `notebook-planner-probe.typ` dumps the parsed model as text for the verify script (keep its `key=value` header). Bare `make` (`build.sh`) wipes `dist/`, builds all documents, then all four notebook variants per year into `dist/notebook-planner/`, and finally zips every PDF into `dist/sumedharama-calendars-<from>-<to>.zip` (see *Build*). `make notebook-planner-all` builds only the notebook PDFs, with no zip. Typst inputs: `year`, `layout` (`two-weeks`|`one-week`), `theme` (`colour`|`bw`), `proof=1`, `only=<panel>`. The notebook scripts are Typst plus shell only (no Python/pdfjam/pdftk).
 
 Shared with the other documents via `lib.typ` and `data/`: colours, fonts, `MOON_KIND`, `SEASON_TEXT`, `moon()`, `event_rows()`. Notebook-only additions in `lib.typ`: `FOOTNOTE_TEXT_EN` (English event labels — keep in sync with `FOOTNOTE_TEXT`), `MONTHS_ABBR_EN`/`WEEKDAYS_ABBR_EN`, `moon_bw()` (vector B/W moon), `load_year()` and the week/page model (`weeks_for`, `pages_for`).
 
