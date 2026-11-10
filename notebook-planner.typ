@@ -22,7 +22,12 @@
 // week per A6 panel, seven full-width day rows).
 #let LAYOUT = sys.inputs.at("layout", default: "two-weeks")
 #assert(LAYOUT in ("two-weeks", "one-week"), message: "layout must be two-weeks or one-week")
-#let WEEK_LAYOUT = LAYOUT == "one-week"
+// Paper: "A6" (default, 2 × 2 panels per A4 side) or "A7" (4 × 2 panels per A4
+// landscape side, one-week layout only, narrower inset).
+#let PAPER = sys.inputs.at("paper", default: "A6")
+#assert(PAPER in ("A6", "A7"), message: "paper must be A6 or A7")
+#let A7 = PAPER == "A7"
+#let WEEK_LAYOUT = LAYOUT == "one-week" or A7
 // Theme: "colour" (default, navy/gold) or "bw" — high contrast for laser
 // printers: 100 % black text and rules, pure black-and-white moon icons, no
 // tinted cells.
@@ -40,13 +45,13 @@
 //   columns    two day columns of 47.5 mm
 //   rows       seven day rows of 19.786 mm (138.5 / 7)
 // ---------------------------------------------------------------------------
-#let PANEL_W = 105mm
-#let PANEL_H = 148.5mm
-#let INSET = 5mm
+#let PANEL_W = if A7 { 74.25mm } else { 105mm }
+#let PANEL_H = if A7 { 105mm } else { 148.5mm }
+#let INSET = if A7 { 3mm } else { 5mm }
 #let CONTENT_W = PANEL_W - 2 * INSET
 #let CONTENT_H = PANEL_H - 2 * INSET
 #let COL_W = 47.5mm
-#let ROW_H = 19.786mm
+#let ROW_H = CONTENT_H / 7
 
 // ---------------------------------------------------------------------------
 // Typography and colour — serif/sans and the navy/gold scheme come from
@@ -71,8 +76,8 @@
 
 // Padding inside a day cell. It sits within the panel inset, so it only shapes
 // the cell's internal breathing room.
-#let CELL_PAD_X = 1.5mm
-#let CELL_PAD_Y = 1.4mm
+#let CELL_PAD_X = if A7 { 0.8mm } else { 1.5mm }
+#let CELL_PAD_Y = if A7 { 1mm } else { 1.4mm }
 // Height reserved by the date line; the 4 mm moon is centred on it and overflows
 // the text height by design, so it needs the top padding above it.
 #let DATE_H = 4.6mm
@@ -244,19 +249,34 @@
 // first side, 5–8 on the next, etc.) with no front/back distinction — the
 // sheet is unfolded and re-oriented by hand when turning it over.
 // ---------------------------------------------------------------------------
-#let PAGE_W = 210mm
-#let PAGE_H = 297mm
+#let PAGE_W = if A7 { 297mm } else { 210mm }
+#let PAGE_H = if A7 { 210mm } else { 297mm }
+#let PER_SIDE = if A7 { 8 } else { 4 }
 
 // Slots in reading order bottom-right → top-right → top-left → bottom-left.
 // Every A4 side uses the same layout; pages simply continue 1, 2, 3, 4 …
 // with base advancing by four per side. No front/back distinction is needed
 // because the sheet is unfolded and re-oriented by hand when turning it over.
-#let slot_layout(base) = (
+//
+// A7: 4 × 2 on a landscape A4. Bottom row upright, pages 2-5 left to right; top
+// row rotated 180°, pages 1, 8, 7, 6 left to right. Page 1 sits above page 2.
+// The sheet is cut along the middle between the two inner columns (pages 8/7
+// above 3/4) and folded, so those two columns become flaps.
+#let slot_layout(base) = if A7 {(
+  (col: 0, row: 0, page: base + 1, rotated: true),
+  (col: 1, row: 0, page: base + 8, rotated: true),
+  (col: 2, row: 0, page: base + 7, rotated: true),
+  (col: 3, row: 0, page: base + 6, rotated: true),
+  (col: 0, row: 1, page: base + 2, rotated: false),
+  (col: 1, row: 1, page: base + 3, rotated: false),
+  (col: 2, row: 1, page: base + 4, rotated: false),
+  (col: 3, row: 1, page: base + 5, rotated: false),
+)} else {(
   (col: 1, row: 1, page: base + 1, rotated: false),
   (col: 1, row: 0, page: base + 2, rotated: true),
   (col: 0, row: 0, page: base + 3, rotated: true),
   (col: 0, row: 1, page: base + 4, rotated: false),
-)
+)}
 
 // One A4 side. Out-of-range page numbers leave the slot blank: white, no
 // rules, no year mark.
@@ -271,6 +291,15 @@
         if slot.rotated { rotate(180deg, content) } else { content },
       )
     }
+  }
+  // A7: thin cut mark along the middle, between the two inner columns.
+  if A7 {
+    place(
+      top + left,
+      dx: PANEL_W,
+      dy: PANEL_H,
+      line(length: 2 * PANEL_W, stroke: 0.3pt + black),
+    )
   }
 }
 
@@ -291,7 +320,7 @@
   pages_for(YEAR, data: data)
 }
 
-#let slide_count = calc.ceil(pages.len() / 4)
+#let slide_count = calc.ceil(pages.len() / PER_SIDE)
 
 #set document(
   title: if PROOF { "Calendar fold proof" } else { "Calendar " + str(YEAR) + if BW { " (high contrast)" } else { "" } },
@@ -308,7 +337,7 @@
 #if ONLY == "" [
   #for side in range(slide_count) {
     if side > 0 { pagebreak() }
-    sheet_side(side * 4, pages)
+    sheet_side(side * PER_SIDE, pages)
   }
 ] else [
   #place(top + left, panel(pages.at(int(ONLY) - 1), int(ONLY)))

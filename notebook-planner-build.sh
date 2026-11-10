@@ -10,6 +10,8 @@
 # The year must have a matching data file, data/events-<year>.csv. See
 # docs/notebook-planner/README.md for adding a new year. Printing and folding instructions are also
 # in that file.
+#
+#   ./notebook-planner-build.sh 2026 A7 [bw] -> dist/notebook-planner/A7/notebook-planner-A7-2026-one-week[-bw].pdf (8 panels per A4 landscape sheet)
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -38,7 +40,7 @@ fail() {
   exit 1
 }
 
-if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 4 ]; then
   fail "expected the year and optional words, e.g. ./notebook-planner-build.sh 2026 [one-week] [bw]"
 fi
 
@@ -49,32 +51,36 @@ fi
 shift
 LAYOUT=two-weeks
 THEME=colour
+PAPER=A6
 for opt in "$@"; do
   case "$opt" in
     one-week) LAYOUT=one-week ;;
     bw) THEME=bw ;;
-    *) fail "unknown option '$opt' (use one-week and/or bw)" ;;
+    A6) PAPER=A6 ;;
+    A7) PAPER=A7 ;;
+    *) fail "unknown option '$opt' (use A6/A7, one-week and/or bw)" ;;
   esac
 done
+# A7 only has the one-week layout.
+[ "$PAPER" = A7 ] && LAYOUT=one-week
 
 if [ ! -f "data/events-$YEAR.csv" ]; then
   fail "No data file data/events-$YEAR.csv — add it or choose a year in $(available_years | head -n 1)–$(available_years | tail -n 1)."
 fi
 
-mkdir -p dist/notebook-planner/A6
-OUT="dist/notebook-planner/A6/notebook-planner-A6-$YEAR"
+mkdir -p "dist/notebook-planner/$PAPER"
+OUT="dist/notebook-planner/$PAPER/notebook-planner-$PAPER-$YEAR"
 OUT="$OUT-$LAYOUT"
 [ "$THEME" = bw ] && OUT="$OUT-bw"
 OUT="$OUT.pdf"
 
 start=$SECONDS
-typst compile --input year="$YEAR" --input layout="$LAYOUT" --input theme="$THEME" notebook-planner.typ "$OUT"
+typst compile --input year="$YEAR" --input layout="$LAYOUT" --input theme="$THEME" --input paper="$PAPER" notebook-planner.typ "$OUT"
 elapsed=$((SECONDS - start))
 
 if command -v pdfinfo >/dev/null 2>&1; then
   sides=$(pdfinfo "$OUT" | awk '/^Pages:/ { print $2 }')
-  sheets=$(( (sides + 1) / 2 ))
-  echo "$OUT — $sides A4 sides ($sheets sheets), built in ${elapsed}s"
+  echo "$OUT — $sides A4 sides, built in ${elapsed}s"
 else
   echo "$OUT — built in ${elapsed}s (install pdfinfo to print the page count)"
 fi

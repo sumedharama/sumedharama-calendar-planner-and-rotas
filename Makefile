@@ -24,6 +24,7 @@ daily-schedule:
 #   make notebook-planner-one-week YEAR=2026     one week per A6 panel
 #   make notebook-planner-bw YEAR=2026           high-contrast B/W (also notebook-planner-one-week-bw)
 #   make notebook-planner-all                    4 PDFs per year with data (YEAR=2026 for one)
+#   make notebook-planner-A7 YEAR=2026          A7 one-week (also notebook-planner-A7-bw)
 #   make notebook-planner-watch YEAR=2026        rebuild on every change
 #   make notebook-planner-proof                  fold-proof PDF
 #   make notebook-planner-verify YEAR=2026       acceptance checks (needs poppler-utils)
@@ -38,11 +39,11 @@ YEAR ?= 2026
 
 .PHONY: notebook-planner notebook-planner-one-week notebook-planner-bw notebook-planner-one-week-bw \
         notebook-planner-all notebook-planner-watch notebook-planner-proof notebook-planner-verify \
-        notebook-planner-clean
+        notebook-planner-clean notebook-planner-A7 notebook-planner-A7-bw
 
 notebook-planner-all:
 	@for y in $(NP_ALL_YEARS); do \
-	  ./notebook-planner-build.sh $$y && ./notebook-planner-build.sh $$y one-week && ./notebook-planner-build.sh $$y bw && ./notebook-planner-build.sh $$y one-week bw || exit 1; \
+	  ./notebook-planner-build.sh $$y && ./notebook-planner-build.sh $$y one-week && ./notebook-planner-build.sh $$y bw && ./notebook-planner-build.sh $$y one-week bw && ./notebook-planner-build.sh $$y A7 && ./notebook-planner-build.sh $$y A7 bw || exit 1; \
 	done
 
 notebook-planner:
@@ -56,6 +57,12 @@ notebook-planner-bw:
 
 notebook-planner-one-week-bw:
 	./notebook-planner-build.sh $(YEAR) one-week bw
+
+notebook-planner-A7:
+	./notebook-planner-build.sh $(YEAR) A7
+
+notebook-planner-A7-bw:
+	./notebook-planner-build.sh $(YEAR) A7 bw
 
 notebook-planner-watch:
 	@mkdir -p dist/notebook-planner/A6

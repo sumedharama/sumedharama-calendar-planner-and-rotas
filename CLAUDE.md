@@ -138,6 +138,7 @@ Key points:
 - Panels are `box(width: PANEL_W, height: PANEL_H, clip: true)` with absolutely placed fixed-height day rows; rotate the *finished* panel by 180° rather than laying out rotated text. 5 mm inset on every panel.
 - Imposition (`slot_layout(base)`, `base = 4s`, same on every A4 side): top-left page 4s+3 rotated, top-right 4s+2 rotated, bottom-left 4s+4 upright, bottom-right 4s+1 upright. Pages past the last leave a blank slot. If a panel is out of order after a hand fold, fix only `slot_layout`; record the `make notebook-planner-proof` result (not yet recorded as run).
 - Theme values are the `INK`/`ACCENT`/`RULE*`/`WEEKEND_TINT` lets at the top of `notebook-planner.typ` — use them, not `NAVY`/`GOLD`, in panel code.
+- **A7 variant** (`paper=A7`, `make notebook-planner-A7[-bw]`, `./notebook-planner-build.sh 2026 A7 [bw]` → `dist/notebook-planner/A7/notebook-planner-A7-<year>-one-week[-bw].pdf`): 8 panels of 74.25×105 mm on a landscape A4 (4×2), one-week layout only, 3 mm inset and tighter cell padding. Bottom row upright pages 2–5, top row rotated 180° pages 1, 8, 7, 6; cut along the middle between the inner two columns, then fold. `slot_layout` holds both imposition tables; `PER_SIDE` = 8. Bare `make` builds 6 notebook PDFs per year (4 A6 + 2 A7). The verify script only checks A6.
 - Pitfalls: `} else {` on one line in markup; four panels exactly fill 210×297 mm (extend inner edges 0.2 mm if a hairline seam appears); `pdftotext -layout` scrambles 180° panels, use `-raw`.
 ## Notes
 
